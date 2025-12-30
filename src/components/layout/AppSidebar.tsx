@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -11,16 +11,20 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  User,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { workspaces, currentUser } from '@/data/mockData';
+import { clearSession } from '@/types/auth';
 
 interface AppSidebarProps {
   collapsed: boolean;
@@ -37,7 +41,13 @@ const navItems = [
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggle, onCreateTask }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [selectedWorkspace, setSelectedWorkspace] = React.useState(workspaces[0]);
+
+  const handleLogout = () => {
+    clearSession();
+    navigate('/auth/login');
+  };
 
   return (
     <aside
@@ -151,34 +161,48 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggle, onC
 
       {/* User Section */}
       <div className="border-t border-border p-3">
-        <Link
-          to="/app/profile"
-          className={cn(
-            'flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-accent',
-            collapsed && 'justify-center px-0'
-          )}
-        >
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-            <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-          </Avatar>
-          {!collapsed && (
-            <div className="flex-1 overflow-hidden">
-              <p className="truncate text-sm font-medium">{currentUser.name}</p>
-              <p className="truncate text-xs text-muted-foreground">
-                {currentUser.role}
-              </p>
-            </div>
-          )}
-        </Link>
-        {!collapsed && (
-          <Link to="/app/settings">
-            <Button variant="ghost" size="sm" className="mt-2 w-full justify-start">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
-          </Link>
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={cn(
+                'flex w-full items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-accent',
+                collapsed && 'justify-center px-0'
+              )}
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
+                <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              {!collapsed && (
+                <div className="flex-1 overflow-hidden text-left">
+                  <p className="truncate text-sm font-medium">{currentUser.name}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {currentUser.role}
+                  </p>
+                </div>
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="top" className="w-56">
+            <DropdownMenuItem asChild>
+              <Link to="/app/profile" className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Profile
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/app/settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-destructive focus:text-destructive">
+              <LogOut className="h-4 w-4" />
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </aside>
   );
