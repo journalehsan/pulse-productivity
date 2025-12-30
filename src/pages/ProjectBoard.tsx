@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plus, List, LayoutGrid, Calendar, FileText, Users } from 'lucide-react';
+import { Plus, List, LayoutGrid, Calendar, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +14,8 @@ import { KanbanBoard } from '@/components/tasks/KanbanBoard';
 import { FilterBar } from '@/components/tasks/FilterBar';
 import { CreateTaskModal } from '@/components/modals/CreateTaskModal';
 import { NoTasksEmptyState } from '@/components/common/EmptyState';
-import { projects, getNestedTasks } from '@/data/mockData';
+import { ProjectCalendar } from '@/components/calendar/ProjectCalendar';
+import { projects, getNestedTasks, tasks as allTasks } from '@/data/mockData';
 import { Task } from '@/types';
 
 const ProjectBoard: React.FC = () => {
@@ -27,6 +28,12 @@ const ProjectBoard: React.FC = () => {
   const project = projects.find((p) => p.id === projectId);
   const nestedTasks = useMemo(
     () => (projectId ? getNestedTasks(projectId) : []),
+    [projectId]
+  );
+
+  // Flat list of project tasks for calendar
+  const projectTasks = useMemo(
+    () => allTasks.filter((t) => t.projectId === projectId),
     [projectId]
   );
 
@@ -186,15 +193,12 @@ const ProjectBoard: React.FC = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="calendar" className="h-full m-0 p-6">
-            <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg">
-              <div className="text-center">
-                <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">
-                  Calendar view coming soon
-                </p>
-              </div>
-            </div>
+          <TabsContent value="calendar" className="h-full m-0">
+            <ProjectCalendar
+              tasks={projectTasks}
+              onTaskClick={setSelectedTask}
+              onCreateTask={() => setCreateTaskOpen(true)}
+            />
           </TabsContent>
 
           <TabsContent value="files" className="h-full m-0 p-6">
