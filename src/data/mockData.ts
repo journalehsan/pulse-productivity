@@ -72,7 +72,8 @@ const createTask = (
   tagIds: string[],
   parentId?: string,
   dueDate?: string,
-  description?: string
+  description?: string,
+  startDate?: string
 ): Task => ({
   id,
   title,
@@ -80,6 +81,7 @@ const createTask = (
   status,
   priority,
   assignees,
+  startDate,
   dueDate,
   tags: tags.filter(t => tagIds.includes(t.id)),
   parentId,
@@ -91,30 +93,47 @@ const createTask = (
   isExpanded: true,
 });
 
+// Helper to generate dates relative to current month for demo
+const getRelativeDate = (dayOffset: number): string => {
+  const date = new Date();
+  date.setDate(date.getDate() + dayOffset);
+  return date.toISOString().split('T')[0];
+};
+
 export const tasks: Task[] = [
   // Project 1 - Website Redesign
-  createTask('task-1', 'Homepage redesign', 'proj-1', 'in_progress', 'high', [users[0], users[1]], ['tag-1', 'tag-3'], undefined, '2024-02-15', 'Complete overhaul of the homepage with new branding'),
-  createTask('task-2', 'Update hero section', 'proj-1', 'in_progress', 'high', [users[1]], ['tag-1'], 'task-1', '2024-02-10'),
-  createTask('task-3', 'Design new navigation', 'proj-1', 'done', 'medium', [users[2]], ['tag-3'], 'task-1', '2024-02-08'),
-  createTask('task-4', 'Implement responsive menu', 'proj-1', 'review', 'medium', [users[0]], ['tag-1'], 'task-3', '2024-02-12'),
-  createTask('task-5', 'Footer component', 'proj-1', 'backlog', 'low', [users[3]], ['tag-1'], 'task-1'),
-  createTask('task-6', 'API integration', 'proj-1', 'in_progress', 'urgent', [users[0], users[2]], ['tag-2'], undefined, '2024-02-05', 'Connect frontend to new REST API'),
-  createTask('task-7', 'Setup authentication endpoints', 'proj-1', 'done', 'high', [users[2]], ['tag-2'], 'task-6'),
-  createTask('task-8', 'Implement data fetching hooks', 'proj-1', 'in_progress', 'high', [users[0]], ['tag-1', 'tag-2'], 'task-6', '2024-02-06'),
-  createTask('task-9', 'Error handling middleware', 'proj-1', 'backlog', 'medium', [users[2]], ['tag-2'], 'task-6'),
-  createTask('task-10', 'Write unit tests', 'proj-1', 'backlog', 'medium', [users[3]], ['tag-6'], undefined, '2024-02-20'),
+  createTask('task-1', 'Homepage redesign', 'proj-1', 'in_progress', 'high', [users[0], users[1]], ['tag-1', 'tag-3'], undefined, getRelativeDate(5), 'Complete overhaul of the homepage with new branding', getRelativeDate(0)),
+  createTask('task-2', 'Update hero section', 'proj-1', 'in_progress', 'high', [users[1]], ['tag-1'], 'task-1', getRelativeDate(2)),
+  createTask('task-3', 'Design new navigation', 'proj-1', 'done', 'medium', [users[2]], ['tag-3'], 'task-1', getRelativeDate(-2)),
+  createTask('task-4', 'Implement responsive menu', 'proj-1', 'review', 'medium', [users[0]], ['tag-1'], 'task-3', getRelativeDate(4)),
+  createTask('task-5', 'Footer component', 'proj-1', 'backlog', 'low', [users[3]], ['tag-1'], 'task-1', getRelativeDate(12)),
+  createTask('task-6', 'API integration', 'proj-1', 'in_progress', 'urgent', [users[0], users[2]], ['tag-2'], undefined, getRelativeDate(1), 'Connect frontend to new REST API'),
+  createTask('task-7', 'Setup authentication endpoints', 'proj-1', 'done', 'high', [users[2]], ['tag-2'], 'task-6', getRelativeDate(-1)),
+  createTask('task-8', 'Implement data fetching hooks', 'proj-1', 'in_progress', 'high', [users[0]], ['tag-1', 'tag-2'], 'task-6', getRelativeDate(3)),
+  createTask('task-9', 'Error handling middleware', 'proj-1', 'backlog', 'medium', [users[2]], ['tag-2'], 'task-6', getRelativeDate(8)),
+  createTask('task-10', 'Write unit tests', 'proj-1', 'backlog', 'medium', [users[3]], ['tag-6'], undefined, getRelativeDate(15)),
+  
+  // Additional calendar-friendly tasks for proj-1
+  createTask('task-21', 'Sprint planning meeting', 'proj-1', 'in_progress', 'high', [users[0], users[1], users[2]], ['tag-5'], undefined, getRelativeDate(7), 'Weekly sprint planning session', getRelativeDate(7)),
+  createTask('task-22', 'Code review session', 'proj-1', 'backlog', 'medium', [users[0], users[2]], ['tag-1', 'tag-2'], undefined, getRelativeDate(10), 'Review all pending PRs'),
+  createTask('task-23', 'Design system documentation', 'proj-1', 'in_progress', 'medium', [users[1]], ['tag-3', 'tag-6'], undefined, getRelativeDate(14), 'Document all design tokens and components', getRelativeDate(11)),
+  createTask('task-24', 'Performance audit', 'proj-1', 'backlog', 'high', [users[0]], ['tag-1'], undefined, getRelativeDate(6), 'Run Lighthouse audit and fix issues'),
+  createTask('task-25', 'User testing session', 'proj-1', 'review', 'urgent', [users[1], users[3]], ['tag-3'], undefined, getRelativeDate(0), 'Conduct user testing with 5 participants'),
+  createTask('task-26', 'Analytics integration', 'proj-1', 'backlog', 'low', [users[2]], ['tag-2'], undefined, getRelativeDate(18)),
+  createTask('task-27', 'SEO optimization', 'proj-1', 'in_progress', 'medium', [users[0]], ['tag-1'], undefined, getRelativeDate(9), 'Implement meta tags and structured data', getRelativeDate(8)),
+  createTask('task-28', 'Accessibility review', 'proj-1', 'backlog', 'high', [users[3]], ['tag-1', 'tag-6'], undefined, getRelativeDate(13)),
   
   // Project 2 - Mobile App
-  createTask('task-11', 'User authentication flow', 'proj-2', 'in_progress', 'urgent', [users[1], users[3]], ['tag-1', 'tag-2'], undefined, '2024-02-08', 'Implement complete auth flow with social login'),
-  createTask('task-12', 'Login screen UI', 'proj-2', 'done', 'high', [users[3]], ['tag-3'], 'task-11'),
-  createTask('task-13', 'OAuth integration', 'proj-2', 'in_progress', 'high', [users[1]], ['tag-2'], 'task-11', '2024-02-07'),
-  createTask('task-14', 'Password reset flow', 'proj-2', 'backlog', 'medium', [users[3]], ['tag-1'], 'task-11'),
-  createTask('task-15', 'Dashboard widgets', 'proj-2', 'review', 'high', [users[0]], ['tag-1', 'tag-3'], undefined, '2024-02-10'),
-  createTask('task-16', 'Activity chart component', 'proj-2', 'done', 'medium', [users[0]], ['tag-1'], 'task-15'),
-  createTask('task-17', 'Quick stats cards', 'proj-2', 'review', 'medium', [users[1]], ['tag-1', 'tag-3'], 'task-15'),
-  createTask('task-18', 'Push notifications', 'proj-2', 'backlog', 'high', [users[2]], ['tag-2', 'tag-5'], undefined, '2024-02-25'),
-  createTask('task-19', 'Fix login bug on Android', 'proj-2', 'in_progress', 'urgent', [users[3]], ['tag-4'], undefined, '2024-02-03'),
-  createTask('task-20', 'Performance optimization', 'proj-2', 'backlog', 'medium', [users[0], users[2]], ['tag-1', 'tag-2'], undefined, '2024-03-01'),
+  createTask('task-11', 'User authentication flow', 'proj-2', 'in_progress', 'urgent', [users[1], users[3]], ['tag-1', 'tag-2'], undefined, getRelativeDate(2), 'Implement complete auth flow with social login'),
+  createTask('task-12', 'Login screen UI', 'proj-2', 'done', 'high', [users[3]], ['tag-3'], 'task-11', getRelativeDate(-3)),
+  createTask('task-13', 'OAuth integration', 'proj-2', 'in_progress', 'high', [users[1]], ['tag-2'], 'task-11', getRelativeDate(1)),
+  createTask('task-14', 'Password reset flow', 'proj-2', 'backlog', 'medium', [users[3]], ['tag-1'], 'task-11', getRelativeDate(11)),
+  createTask('task-15', 'Dashboard widgets', 'proj-2', 'review', 'high', [users[0]], ['tag-1', 'tag-3'], undefined, getRelativeDate(4)),
+  createTask('task-16', 'Activity chart component', 'proj-2', 'done', 'medium', [users[0]], ['tag-1'], 'task-15', getRelativeDate(-1)),
+  createTask('task-17', 'Quick stats cards', 'proj-2', 'review', 'medium', [users[1]], ['tag-1', 'tag-3'], 'task-15', getRelativeDate(5)),
+  createTask('task-18', 'Push notifications', 'proj-2', 'backlog', 'high', [users[2]], ['tag-2', 'tag-5'], undefined, getRelativeDate(20)),
+  createTask('task-19', 'Fix login bug on Android', 'proj-2', 'in_progress', 'urgent', [users[3]], ['tag-4'], undefined, getRelativeDate(0)),
+  createTask('task-20', 'Performance optimization', 'proj-2', 'backlog', 'medium', [users[0], users[2]], ['tag-1', 'tag-2'], undefined, getRelativeDate(25)),
 ];
 
 // Build nested task structure

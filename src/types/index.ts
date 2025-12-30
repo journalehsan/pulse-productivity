@@ -33,6 +33,7 @@ export interface Task {
   status: 'backlog' | 'in_progress' | 'review' | 'done';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   assignees: User[];
+  startDate?: string;
   dueDate?: string;
   tags: Tag[];
   parentId?: string;
