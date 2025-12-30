@@ -25,6 +25,7 @@ import { workspaces, currentUser } from '@/data/mockData';
 interface AppSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
+  onCreateTask: () => void;
 }
 
 const navItems = [
@@ -34,7 +35,7 @@ const navItems = [
   { icon: Clock, label: 'Timesheets', path: '/app/timesheets' },
 ];
 
-export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggle }) => {
+export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggle, onCreateTask }) => {
   const location = useLocation();
   const [selectedWorkspace, setSelectedWorkspace] = React.useState(workspaces[0]);
 
@@ -93,6 +94,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ collapsed, onToggle }) =
       {/* Create Task Button */}
       <div className="p-3">
         <Button
+          onClick={onCreateTask}
           className={cn(
             'w-full justify-start gap-2',
             collapsed && 'justify-center px-0'
