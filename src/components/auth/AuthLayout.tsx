@@ -1,0 +1,53 @@
+import React from 'react';
+import { Zap } from 'lucide-react';
+
+interface AuthLayoutProps {
+  children: React.ReactNode;
+  sideContent?: React.ReactNode;
+}
+
+export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, sideContent }) => {
+  return (
+    <div className="min-h-screen bg-muted/30 flex flex-col">
+      <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+        <div className="w-full max-w-5xl grid gap-6 lg:grid-cols-2 lg:gap-12">
+          {/* Left: Login Form */}
+          <div className="flex flex-col justify-center">
+            <div className="mx-auto w-full max-w-md">
+              {/* Brand */}
+              <div className="flex items-center gap-2 mb-8">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+                  <Zap className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="text-2xl font-bold">PulseTasks</span>
+              </div>
+
+              {children}
+            </div>
+          </div>
+
+          {/* Right: Side Content */}
+          {sideContent && (
+            <div className="hidden lg:flex lg:flex-col lg:justify-center">
+              {sideContent}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile side content */}
+      {sideContent && (
+        <div className="lg:hidden px-4 pb-8">
+          <div className="max-w-md mx-auto">
+            {sideContent}
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="py-4 text-center text-xs text-muted-foreground border-t border-border bg-background">
+        © PulseTasks · v1.0.0
+      </footer>
+    </div>
+  );
+};
