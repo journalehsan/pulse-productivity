@@ -178,6 +178,10 @@ const ProjectBoard: React.FC = () => {
                 tasks={nestedTasks}
                 onSelectTask={setSelectedTask}
                 selectedTaskId={selectedTask?.id}
+                onTaskMove={(taskId, newStatus) => {
+                  console.log(`Task ${taskId} moved to ${newStatus}`);
+                  // In a real app, this would update the backend
+                }}
               />
             )}
           </TabsContent>
