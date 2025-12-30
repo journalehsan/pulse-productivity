@@ -11,6 +11,7 @@ import Reports from "./pages/Reports";
 import Timesheets from "./pages/Timesheets";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,7 +23,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/auth/login" replace />} />
+          <Route path="/auth/login" element={<Login />} />
           <Route path="/app" element={<AppLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="projects" element={<Projects />} />
