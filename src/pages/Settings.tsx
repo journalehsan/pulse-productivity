@@ -17,6 +17,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
+import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { workspaces } from '@/data/mockData';
 
 const roles = ['Admin', 'Manager', 'Member', 'Viewer'];
@@ -81,6 +82,9 @@ const Settings: React.FC = () => {
       />
 
       <div className="p-6 space-y-6 max-w-4xl">
+        {/* Appearance Settings */}
+        <AppearanceSettings />
+
         {/* Workspace Settings */}
         <Card>
           <CardHeader>

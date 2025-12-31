@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ThemeToggle } from './ThemeToggle';
 
 interface TopBarProps {
   onCreateTask?: () => void;
@@ -112,6 +113,9 @@ export const TopBar: React.FC<TopBarProps> = ({ onCreateTask }) => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Theme Toggle */}
+        <ThemeToggle />
 
         {/* Help */}
         <DropdownMenu>
