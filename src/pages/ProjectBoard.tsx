@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plus, List, LayoutGrid, Calendar, FileText } from 'lucide-react';
+import { Plus, List, LayoutGrid, Calendar, FileText, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,6 +13,7 @@ import { TaskDetailsDrawer } from '@/components/tasks/TaskDetailsDrawer';
 import { KanbanBoard } from '@/components/tasks/KanbanBoard';
 import { FilterBar } from '@/components/tasks/FilterBar';
 import { CreateTaskModal } from '@/components/modals/CreateTaskModal';
+import { ImportTasksModal } from '@/components/modals/ImportTasksModal';
 import { NoTasksEmptyState } from '@/components/common/EmptyState';
 import { ProjectCalendar } from '@/components/calendar/ProjectCalendar';
 import { projects, getNestedTasks, tasks as allTasks } from '@/data/mockData';
@@ -23,19 +24,32 @@ const ProjectBoard: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [activeTab, setActiveTab] = useState('list');
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [importedTasks, setImportedTasks] = useState<Task[]>([]);
 
   const project = projects.find((p) => p.id === projectId);
-  const nestedTasks = useMemo(
-    () => (projectId ? getNestedTasks(projectId) : []),
-    [projectId]
-  );
+  
+  // Combine mock tasks with imported tasks
+  const nestedTasks = useMemo(() => {
+    if (!projectId) return [];
+    const baseTasks = getNestedTasks(projectId);
+    // Add imported tasks to the root level (they may have parentId set)
+    const importedForProject = importedTasks.filter((t) => t.projectId === projectId);
+    return [...baseTasks, ...importedForProject.filter((t) => !t.parentId)];
+  }, [projectId, importedTasks]);
 
-  // Flat list of project tasks for calendar
-  const projectTasks = useMemo(
-    () => allTasks.filter((t) => t.projectId === projectId),
-    [projectId]
-  );
+  // Flat list of project tasks for calendar (including imported)
+  const projectTasks = useMemo(() => {
+    const baseTasks = allTasks.filter((t) => t.projectId === projectId);
+    const importedForProject = importedTasks.filter((t) => t.projectId === projectId);
+    return [...baseTasks, ...importedForProject];
+  }, [projectId, importedTasks]);
+
+  // Handle import
+  const handleImport = useCallback((tasks: Task[]) => {
+    setImportedTasks((prev) => [...prev, ...tasks]);
+  }, []);
 
   if (!project) {
     return (
@@ -45,15 +59,15 @@ const ProjectBoard: React.FC = () => {
     );
   }
 
+  const allProjectTasks = [...project.tasks, ...importedTasks.filter((t) => t.projectId === projectId)];
   const taskCounts = {
-    total: project.tasks.length,
-    done: project.tasks.filter((t) => t.status === 'done').length,
-    inProgress: project.tasks.filter((t) => t.status === 'in_progress').length,
+    total: allProjectTasks.length,
+    done: allProjectTasks.filter((t) => t.status === 'done').length,
+    inProgress: allProjectTasks.filter((t) => t.status === 'in_progress').length,
   };
 
   const handleQuickAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && newTaskTitle.trim()) {
-      // In a real app, this would add the task to the list
       console.log('Quick add task:', newTaskTitle);
       setNewTaskTitle('');
     }
@@ -74,17 +88,11 @@ const ProjectBoard: React.FC = () => {
         }
         actions={
           <div className="flex items-center gap-2">
-            {/* Members */}
             <div className="flex -space-x-2 mr-2">
               {project.members.slice(0, 4).map((member) => (
-                <Avatar
-                  key={member.id}
-                  className="h-8 w-8 border-2 border-background"
-                >
+                <Avatar key={member.id} className="h-8 w-8 border-2 border-background">
                   <AvatarImage src={member.avatar} />
-                  <AvatarFallback className="text-xs">
-                    {member.name.charAt(0)}
-                  </AvatarFallback>
+                  <AvatarFallback className="text-xs">{member.name.charAt(0)}</AvatarFallback>
                 </Avatar>
               ))}
               {project.members.length > 4 && (
@@ -94,13 +102,17 @@ const ProjectBoard: React.FC = () => {
               )}
             </div>
 
-            {/* Quick Stats */}
             <Badge variant="outline" className="hidden sm:flex gap-1">
               <span className="text-muted-foreground">{taskCounts.done}</span>
               <span>/</span>
               <span>{taskCounts.total}</span>
               <span className="text-muted-foreground">done</span>
             </Badge>
+
+            <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+              <Upload className="h-4 w-4 mr-1" />
+              Import
+            </Button>
 
             <Button onClick={() => setCreateTaskOpen(true)}>
               <Plus className="h-4 w-4 mr-1" />
@@ -223,6 +235,14 @@ const ProjectBoard: React.FC = () => {
         open={createTaskOpen}
         onOpenChange={setCreateTaskOpen}
         defaultProjectId={projectId}
+      />
+
+      {/* Import Tasks Modal */}
+      <ImportTasksModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        projectId={projectId || ''}
+        onImport={handleImport}
       />
     </div>
   );
