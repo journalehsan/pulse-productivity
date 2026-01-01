@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap } from 'lucide-react';
+import { PulseTasksLogo } from '@/components/layout/PulseTasksLogo';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -16,10 +16,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, sideContent })
             <div className="mx-auto w-full max-w-md">
               {/* Brand */}
               <div className="flex items-center gap-2 mb-8">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                  <Zap className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <span className="text-2xl font-bold">PulseTasks</span>
+                <PulseTasksLogo className="h-10 w-auto text-primary" />
               </div>
 
               {children}
