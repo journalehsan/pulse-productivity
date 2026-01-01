@@ -7,14 +7,19 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/lib/utils';
 
-export const ThemeToggle: React.FC = () => {
+interface ThemeToggleProps {
+  className?: string;
+}
+
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className }) => {
   const { theme, toggleMode } = useTheme();
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={toggleMode}>
+        <Button variant="ghost" size="icon" onClick={toggleMode} className={cn(className)}>
           {theme.mode === 'light' ? (
             <Moon className="h-4 w-4" />
           ) : (

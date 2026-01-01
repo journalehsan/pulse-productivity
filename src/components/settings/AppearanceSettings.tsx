@@ -8,6 +8,7 @@ import { useTheme, ThemeMode, ThemePreset } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
 
 const ACCENT_SWATCHES = [
+  { name: 'Gold', color: '#FFCC00' },
   { name: 'Purple', color: '#6D28D9' },
   { name: 'Blue', color: '#2563EB' },
   { name: 'Green', color: '#059669' },

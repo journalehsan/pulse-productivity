@@ -23,7 +23,7 @@ const STORAGE_KEY = 'pulse_theme';
 
 const DEFAULT_THEME: ThemeState = {
   mode: 'light',
-  accent: '#6D28D9',
+  accent: '#FFCC00',
   preset: 'default',
 };
 

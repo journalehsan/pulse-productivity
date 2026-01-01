@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { ThemeToggle } from './ThemeToggle';
+import { PulseTasksLogo } from './PulseTasksLogo';
 
 interface TopBarProps {
   onCreateTask?: () => void;
@@ -27,18 +28,19 @@ export const TopBar: React.FC<TopBarProps> = ({ onCreateTask }) => {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background px-4">
-      {/* Global Search */}
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-primary-foreground/20 bg-primary px-4">
+      {/* Logo and Search */}
       <div className="flex flex-1 items-center gap-4">
+        <PulseTasksLogo className="h-6 w-auto text-primary-foreground" />
         <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
           <DialogTrigger asChild>
             <Button
-              variant="outline"
-              className="w-80 justify-start gap-2 text-muted-foreground"
+              variant="ghost"
+              className="w-80 justify-start gap-2 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
             >
               <Search className="h-4 w-4" />
               <span>Search tasks, projects, users...</span>
-              <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 py-0.5 text-xs font-mono sm:inline-block">
+              <kbd className="ml-auto hidden rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 text-xs font-mono sm:inline-block">
                 <Command className="inline h-3 w-3" />K
               </kbd>
             </Button>
@@ -68,7 +70,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onCreateTask }) => {
 
       {/* Quick Actions */}
       <div className="flex items-center gap-2">
-        <Button size="sm" onClick={onCreateTask} className="gap-1">
+        <Button size="sm" onClick={onCreateTask} className="gap-1 bg-primary-foreground text-primary hover:bg-primary-foreground/90">
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">New Task</span>
         </Button>
@@ -76,7 +78,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onCreateTask }) => {
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-primary-foreground/10">
               <Bell className="h-4 w-4" />
               <Badge
                 variant="destructive"
@@ -115,12 +117,12 @@ export const TopBar: React.FC<TopBarProps> = ({ onCreateTask }) => {
         </DropdownMenu>
 
         {/* Theme Toggle */}
-        <ThemeToggle />
+        <ThemeToggle className="text-primary-foreground hover:bg-primary-foreground/10" />
 
         {/* Help */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
               <HelpCircle className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
