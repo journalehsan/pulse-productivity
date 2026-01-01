@@ -10,25 +10,27 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, sideContent })
   return (
     <div className="min-h-screen bg-muted/30 flex flex-col">
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
-        <div className="w-full max-w-5xl grid gap-6 lg:grid-cols-2 lg:gap-12">
-          {/* Left: Login Form */}
-          <div className="flex flex-col justify-center">
-            <div className="mx-auto w-full max-w-md">
-              {/* Brand */}
-              <div className="flex items-center gap-2 mb-8">
-                <PulseTasksLogo className="h-10 w-auto text-primary" />
-              </div>
-
-              {children}
-            </div>
+        <div className="w-full max-w-5xl">
+          {/* Centered Brand */}
+          <div className="flex justify-center mb-10">
+            <PulseTasksLogo className="h-16 md:h-20 w-auto text-primary" />
           </div>
 
-          {/* Right: Side Content */}
-          {sideContent && (
-            <div className="hidden lg:flex lg:flex-col lg:justify-center">
-              {sideContent}
+          <div className="grid gap-6 lg:grid-cols-2 lg:gap-12">
+            {/* Left: Login Form */}
+            <div className="flex flex-col justify-center">
+              <div className="mx-auto w-full max-w-md">
+                {children}
+              </div>
             </div>
-          )}
+
+            {/* Right: Side Content */}
+            {sideContent && (
+              <div className="hidden lg:flex lg:flex-col lg:justify-center">
+                {sideContent}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
