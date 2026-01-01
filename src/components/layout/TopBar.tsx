@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Search, Plus, Bell, HelpCircle, Command } from 'lucide-react';
+import React from 'react';
+import { Plus, Bell, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,62 +9,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { ThemeToggle } from './ThemeToggle';
 import { PulseTasksLogo } from './PulseTasksLogo';
+import { GlobalSearch } from '@/components/search/GlobalSearch';
+import { Task, Project } from '@/types';
 
 interface TopBarProps {
   onCreateTask?: () => void;
+  onTaskSelect?: (task: Task) => void;
+  onProjectSelect?: (project: Project) => void;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ onCreateTask }) => {
-  const [searchOpen, setSearchOpen] = useState(false);
-
+export const TopBar: React.FC<TopBarProps> = ({ onCreateTask, onTaskSelect, onProjectSelect }) => {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-primary-foreground/20 bg-primary px-4">
       {/* Logo and Search */}
       <div className="flex flex-1 items-center gap-4">
         <PulseTasksLogo className="h-6 w-auto text-primary-foreground" />
-        <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              className="w-80 justify-start gap-2 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10"
-            >
-              <Search className="h-4 w-4" />
-              <span>Search tasks, projects, users...</span>
-              <kbd className="ml-auto hidden rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 text-xs font-mono sm:inline-block">
-                <Command className="inline h-3 w-3" />K
-              </kbd>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-xl">
-            <DialogHeader>
-              <DialogTitle>Search</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <Input
-                placeholder="Type to search..."
-                autoFocus
-                className="h-12 text-base"
-              />
-              <div className="text-sm text-muted-foreground">
-                <p className="mb-2 font-medium">Quick Tips</p>
-                <ul className="space-y-1">
-                  <li><kbd className="rounded border px-1">↑↓</kbd> Navigate results</li>
-                  <li><kbd className="rounded border px-1">Enter</kbd> Open selected</li>
-                  <li><kbd className="rounded border px-1">Esc</kbd> Close search</li>
-                </ul>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <GlobalSearch onTaskSelect={onTaskSelect} onProjectSelect={onProjectSelect} />
       </div>
 
       {/* Quick Actions */}
