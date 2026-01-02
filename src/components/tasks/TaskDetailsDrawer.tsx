@@ -19,8 +19,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Task, User } from '@/types';
-import { comments, users, activityEvents } from '@/data/mockData';
+import { Task, User, Tag as TagType } from '@/types';
+import { comments, users, activityEvents, tags as allTags } from '@/data/mockData';
 import { format } from 'date-fns';
 import { TaskAttachments } from '@/components/files/TaskAttachments';
 
@@ -37,6 +37,8 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [assignees, setAssignees] = useState<User[]>(task?.assignees || []);
   const [isAssigneePopoverOpen, setIsAssigneePopoverOpen] = useState(false);
+  const [taskTags, setTaskTags] = useState<TagType[]>(task?.tags || []);
+  const [isTagPopoverOpen, setIsTagPopoverOpen] = useState(false);
 
   if (!task) return null;
 
@@ -54,6 +56,19 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
 
   const handleRemoveAssignee = (userId: string) => {
     setAssignees(assignees.filter((a) => a.id !== userId));
+  };
+
+  // Get available tags (not already added)
+  const availableTags = allTags.filter(
+    (tag) => !taskTags.some((t) => t.id === tag.id)
+  );
+
+  const handleAddTag = (tag: TagType) => {
+    setTaskTags([...taskTags, tag]);
+  };
+
+  const handleRemoveTag = (tagId: string) => {
+    setTaskTags(taskTags.filter((t) => t.id !== tagId));
   };
 
   const formatTime = (seconds: number) => {
@@ -215,18 +230,59 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
             <Tag className="h-3 w-3" /> Tags
           </label>
           <div className="flex items-center gap-1 flex-wrap">
-            {task.tags.map((tag) => (
+            {taskTags.map((tag) => (
               <Badge
                 key={tag.id}
                 variant="outline"
                 style={{ borderColor: tag.color, color: tag.color }}
+                className="pr-1 gap-1"
               >
                 {tag.name}
+                <button
+                  onClick={() => handleRemoveTag(tag.id)}
+                  className="ml-0.5 rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  aria-label={`Remove ${tag.name} tag`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </Badge>
             ))}
-            <Button variant="ghost" size="sm" className="text-xs">
-              + Add tag
-            </Button>
+            <Popover open={isTagPopoverOpen} onOpenChange={setIsTagPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-xs gap-1">
+                  <Plus className="h-3 w-3" /> Add tag
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="start">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground px-2 py-1">
+                    Available tags
+                  </p>
+                  {availableTags.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-3">
+                      All tags are added
+                    </p>
+                  ) : (
+                    availableTags.map((tag) => (
+                      <button
+                        key={tag.id}
+                        onClick={() => {
+                          handleAddTag(tag);
+                          setIsTagPopoverOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
+                      >
+                        <span
+                          className="h-3 w-3 rounded-full"
+                          style={{ backgroundColor: tag.color }}
+                        />
+                        <span>{tag.name}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
