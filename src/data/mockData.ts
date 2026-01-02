@@ -40,6 +40,19 @@ export const users: User[] = [
   },
 ];
 
+// Username map for mentions (lowercase username -> user)
+export const usersByUsername: Record<string, User> = {
+  'alexmorgan': users[0],
+  'sarahchen': users[1],
+  'mikejohnson': users[2],
+  'emilydavis': users[3],
+  'jameswilson': users[4],
+};
+
+export const getUsernameForUser = (user: User): string => {
+  return user.name.toLowerCase().replace(/\s+/g, '');
+};
+
 export const workspaces: Workspace[] = [
   {
     id: 'ws-1',
@@ -197,9 +210,10 @@ export const activityEvents: ActivityEvent[] = [
 ];
 
 export const comments: Comment[] = [
-  { id: 'cmt-1', taskId: 'task-1', userId: 'user-2', content: 'Looking great so far! Can we add more contrast to the CTA buttons?', createdAt: '2024-01-25T11:00:00Z' },
-  { id: 'cmt-2', taskId: 'task-1', userId: 'user-1', content: 'Good point, I will update the color palette today.', createdAt: '2024-01-25T11:30:00Z' },
-  { id: 'cmt-3', taskId: 'task-6', userId: 'user-3', content: 'The authentication endpoint is ready for testing.', createdAt: '2024-01-25T10:00:00Z' },
+  { id: 'cmt-1', taskId: 'task-1', userId: 'user-2', content: 'Looking great so far! @alexmorgan can we add more contrast to the CTA buttons?', createdAt: '2024-01-25T11:00:00Z' },
+  { id: 'cmt-2', taskId: 'task-1', userId: 'user-1', content: 'Good point @sarahchen, I will update the color palette today. @mikejohnson can you review once done?', createdAt: '2024-01-25T11:30:00Z' },
+  { id: 'cmt-3', taskId: 'task-6', userId: 'user-3', content: 'The authentication endpoint is ready for testing. @emilydavis please verify the OAuth flow.', createdAt: '2024-01-25T10:00:00Z' },
+  { id: 'cmt-4', taskId: 'task-1', userId: 'user-4', content: '@alexmorgan @sarahchen the new designs look amazing! Ship it! 🚀', createdAt: '2024-01-25T14:00:00Z' },
 ];
 
 export const getTaskStats = () => {
