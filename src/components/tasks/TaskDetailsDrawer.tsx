@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Users, Tag, Clock, MessageSquare, Activity, Play, Pause, Paperclip } from 'lucide-react';
+import { X, Calendar, Users, Tag, Clock, MessageSquare, Activity, Play, Pause, Paperclip, Plus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,7 +14,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Task } from '@/types';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Task, User } from '@/types';
 import { comments, users, activityEvents } from '@/data/mockData';
 import { format } from 'date-fns';
 import { TaskAttachments } from '@/components/files/TaskAttachments';
@@ -30,11 +35,26 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
 }) => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
+  const [assignees, setAssignees] = useState<User[]>(task?.assignees || []);
+  const [isAssigneePopoverOpen, setIsAssigneePopoverOpen] = useState(false);
 
   if (!task) return null;
 
   const taskComments = comments.filter((c) => c.taskId === task.id);
   const taskActivity = activityEvents.filter((e) => e.taskId === task.id);
+  
+  // Get available users (not already assigned)
+  const availableUsers = users.filter(
+    (user) => !assignees.some((a) => a.id === user.id)
+  );
+
+  const handleAddAssignee = (user: User) => {
+    setAssignees([...assignees, user]);
+  };
+
+  const handleRemoveAssignee = (userId: string) => {
+    setAssignees(assignees.filter((a) => a.id !== userId));
+  };
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -117,21 +137,64 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
             <Users className="h-3 w-3" /> Assignees
           </label>
           <div className="flex items-center gap-2 flex-wrap">
-            {task.assignees.map((user) => (
+            {assignees.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center gap-2 rounded-full bg-muted px-2 py-1"
+                className="group flex items-center gap-2 rounded-full bg-muted px-2 py-1 pr-1"
               >
                 <Avatar className="h-5 w-5">
                   <AvatarImage src={user.avatar} />
                   <AvatarFallback className="text-xs">{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm">{user.name}</span>
+                <button
+                  onClick={() => handleRemoveAssignee(user.id)}
+                  className="ml-1 rounded-full p-0.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  aria-label={`Remove ${user.name}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </div>
             ))}
-            <Button variant="outline" size="sm">
-              + Add
-            </Button>
+            <Popover open={isAssigneePopoverOpen} onOpenChange={setIsAssigneePopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1">
+                  <Plus className="h-3 w-3" /> Add
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-2" align="start">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground px-2 py-1">
+                    Add team members
+                  </p>
+                  {availableUsers.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-3">
+                      All team members are assigned
+                    </p>
+                  ) : (
+                    availableUsers.map((user) => (
+                      <button
+                        key={user.id}
+                        onClick={() => {
+                          handleAddAssignee(user);
+                          setIsAssigneePopoverOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={user.avatar} />
+                          <AvatarFallback className="text-xs">{user.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 text-left">
+                          <div className="font-medium">{user.name}</div>
+                          <div className="text-xs text-muted-foreground">{user.role}</div>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
