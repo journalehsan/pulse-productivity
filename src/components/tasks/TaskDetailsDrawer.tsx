@@ -20,9 +20,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Task, User, Tag as TagType } from '@/types';
-import { comments, users, activityEvents, tags as allTags } from '@/data/mockData';
+import { comments, users, activityEvents, tags as allTags, usersByUsername, getUsernameForUser } from '@/data/mockData';
 import { format } from 'date-fns';
 import { TaskAttachments } from '@/components/files/TaskAttachments';
+import { Link } from 'react-router-dom';
 
 interface TaskDetailsDrawerProps {
   task: Task | null;
@@ -39,6 +40,10 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
   const [isAssigneePopoverOpen, setIsAssigneePopoverOpen] = useState(false);
   const [taskTags, setTaskTags] = useState<TagType[]>(task?.tags || []);
   const [isTagPopoverOpen, setIsTagPopoverOpen] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [mentionFilter, setMentionFilter] = useState('');
+  const [mentionCursorPosition, setMentionCursorPosition] = useState(0);
 
   if (!task) return null;
 
@@ -69,6 +74,89 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
 
   const handleRemoveTag = (tagId: string) => {
     setTaskTags(taskTags.filter((t) => t.id !== tagId));
+  };
+
+  // Parse comment content and render mentions as styled links
+  const renderCommentWithMentions = (content: string) => {
+    const mentionRegex = /@(\w+)/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = mentionRegex.exec(content)) !== null) {
+      // Add text before the mention
+      if (match.index > lastIndex) {
+        parts.push(content.slice(lastIndex, match.index));
+      }
+
+      const username = match[1].toLowerCase();
+      const mentionedUser = usersByUsername[username];
+
+      if (mentionedUser) {
+        parts.push(
+          <Link
+            key={`${match.index}-${username}`}
+            to={`/app/profile/${mentionedUser.id}`}
+            className="inline-flex items-center gap-0.5 text-primary font-medium hover:underline bg-primary/10 px-1 rounded"
+          >
+            @{mentionedUser.name.split(' ')[0].toLowerCase()}{mentionedUser.name.split(' ')[1]?.toLowerCase() || ''}
+          </Link>
+        );
+      } else {
+        parts.push(
+          <span key={`${match.index}-${username}`} className="text-primary font-medium bg-primary/10 px-1 rounded">
+            @{match[1]}
+          </span>
+        );
+      }
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text
+    if (lastIndex < content.length) {
+      parts.push(content.slice(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : content;
+  };
+
+  // Filter users for mention suggestions
+  const filteredMentionUsers = users.filter((user) =>
+    getUsernameForUser(user).includes(mentionFilter.toLowerCase())
+  );
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart || 0;
+    setCommentText(value);
+    setMentionCursorPosition(cursorPos);
+
+    // Check if we're typing a mention
+    const textBeforeCursor = value.slice(0, cursorPos);
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+
+    if (mentionMatch) {
+      setMentionFilter(mentionMatch[1]);
+      setShowMentionSuggestions(true);
+    } else {
+      setShowMentionSuggestions(false);
+      setMentionFilter('');
+    }
+  };
+
+  const insertMention = (user: User) => {
+    const textBeforeCursor = commentText.slice(0, mentionCursorPosition);
+    const textAfterCursor = commentText.slice(mentionCursorPosition);
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+
+    if (mentionMatch) {
+      const newTextBefore = textBeforeCursor.slice(0, mentionMatch.index) + '@' + getUsernameForUser(user) + ' ';
+      setCommentText(newTextBefore + textAfterCursor);
+    }
+
+    setShowMentionSuggestions(false);
+    setMentionFilter('');
   };
 
   const formatTime = (seconds: number) => {
@@ -375,17 +463,50 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
                           {format(new Date(comment.createdAt), 'MMM d, h:mm a')}
                         </span>
                       </div>
-                      <p className="text-sm mt-1">{comment.content}</p>
+                      <p className="text-sm mt-1">{renderCommentWithMentions(comment.content)}</p>
                     </div>
                   </div>
                 );
               })
             )}
-            <div className="pt-2">
-              <Textarea placeholder="Write a comment..." rows={2} />
-              <Button size="sm" className="mt-2">
-                Post Comment
-              </Button>
+            <div className="pt-2 relative">
+              <Textarea 
+                placeholder="Write a comment... Use @ to mention someone" 
+                rows={2}
+                value={commentText}
+                onChange={handleCommentChange}
+              />
+              {showMentionSuggestions && filteredMentionUsers.length > 0 && (
+                <div className="absolute bottom-full left-0 mb-1 w-64 bg-popover border border-border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+                  <p className="text-xs font-medium text-muted-foreground px-3 py-2 border-b border-border">
+                    Mention someone
+                  </p>
+                  {filteredMentionUsers.map((user) => (
+                    <button
+                      key={user.id}
+                      onClick={() => insertMention(user)}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors"
+                    >
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={user.avatar} />
+                        <AvatarFallback className="text-xs">{user.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 text-left">
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-xs text-muted-foreground">@{getUsernameForUser(user)}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-muted-foreground">
+                  Tip: Type @ to mention teammates
+                </p>
+                <Button size="sm">
+                  Post Comment
+                </Button>
+              </div>
             </div>
           </TabsContent>
           <TabsContent value="activity" className="mt-4 space-y-3">
