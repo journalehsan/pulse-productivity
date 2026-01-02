@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Users, Tag, Clock, MessageSquare, Activity, Play, Pause } from 'lucide-react';
+import { X, Calendar, Users, Tag, Clock, MessageSquare, Activity, Play, Pause, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { Task } from '@/types';
 import { comments, users, activityEvents } from '@/data/mockData';
 import { format } from 'date-fns';
+import { TaskAttachments } from '@/components/files/TaskAttachments';
 
 interface TaskDetailsDrawerProps {
   task: Task | null;
@@ -214,6 +215,11 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
             <Input placeholder="Log time manually (e.g., 2h 30m)" />
           </div>
         </div>
+
+        <Separator />
+
+        {/* Attachments Section */}
+        <TaskAttachments taskId={task.id} projectId={task.projectId} />
 
         <Separator />
 
