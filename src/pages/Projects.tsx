@@ -163,7 +163,7 @@ const Projects: React.FC = () => {
         ) : (
           <div className="space-y-4">
             {filteredProjects.map((project) => (
-              <Link key={project.id} to={`/app/projects/${project.id}`}>
+              <Link key={project.id} to={`/app/projects/${project.id}`} className="block">
                 <Card className="hover:shadow-sm transition-shadow">
                   <CardContent className="p-4 flex items-center gap-4">
                     <div
