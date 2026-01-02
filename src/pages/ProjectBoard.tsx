@@ -16,6 +16,7 @@ import { CreateTaskModal } from '@/components/modals/CreateTaskModal';
 import { ImportTasksModal } from '@/components/modals/ImportTasksModal';
 import { NoTasksEmptyState } from '@/components/common/EmptyState';
 import { ProjectCalendar } from '@/components/calendar/ProjectCalendar';
+import { ProjectFilesTab } from '@/components/files/ProjectFilesTab';
 import { projects, getNestedTasks, tasks as allTasks } from '@/data/mockData';
 import { Task } from '@/types';
 
@@ -213,16 +214,8 @@ const ProjectBoard: React.FC = () => {
             />
           </TabsContent>
 
-          <TabsContent value="files" className="h-full m-0 p-6">
-            <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg">
-              <div className="text-center">
-                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">No files uploaded yet</p>
-                <Button variant="outline" className="mt-2">
-                  Upload Files
-                </Button>
-              </div>
-            </div>
+          <TabsContent value="files" className="h-full m-0 p-4 overflow-y-auto">
+            {projectId && <ProjectFilesTab projectId={projectId} />}
           </TabsContent>
         </div>
       </Tabs>

@@ -26,6 +26,17 @@ export interface Tag {
   color: string;
 }
 
+export interface TaskFile {
+  id: string;
+  name: string;
+  type: string;           // MIME type
+  size: number;           // bytes
+  uploadedAt: string;
+  uploadedBy: string;     // user ID
+  url?: string;           // for preview/download
+  thumbnail?: string;     // for images
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -44,6 +55,7 @@ export interface Task {
   loggedHours?: number;
   subtasks?: Task[];
   isExpanded?: boolean;
+  files?: TaskFile[];
 }
 
 export interface Project {
