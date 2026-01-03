@@ -44,6 +44,12 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
   const [mentionCursorPosition, setMentionCursorPosition] = useState(0);
+  const [localComments, setLocalComments] = useState<Array<{
+    id: string;
+    content: string;
+    userId: string;
+    createdAt: string;
+  }>>([]);
 
   if (!task) return null;
 
@@ -157,6 +163,25 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
 
     setShowMentionSuggestions(false);
     setMentionFilter('');
+  };
+
+  // Handle posting a new comment (UI only - temporary)
+  const handlePostComment = () => {
+    if (!commentText.trim()) return;
+    
+    // Use a demo user (first user in the list) for the comment
+    const currentUserId = users[0]?.id || 'user-1';
+    
+    const newComment = {
+      id: `local-${Date.now()}`,
+      content: commentText,
+      userId: currentUserId,
+      createdAt: new Date().toISOString(),
+    };
+    
+    setLocalComments([...localComments, newComment]);
+    setCommentText('');
+    setShowMentionSuggestions(false);
   };
 
   const formatTime = (seconds: number) => {
@@ -443,31 +468,54 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
             </TabsTrigger>
           </TabsList>
           <TabsContent value="comments" className="mt-4 space-y-4">
-            {taskComments.length === 0 ? (
+            {taskComments.length === 0 && localComments.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
                 No comments yet
               </p>
             ) : (
-              taskComments.map((comment) => {
-                const user = users.find((u) => u.id === comment.userId);
-                return (
-                  <div key={comment.id} className="flex gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.avatar} />
-                      <AvatarFallback>{user?.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{user?.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(comment.createdAt), 'MMM d, h:mm a')}
-                        </span>
+              <>
+                {taskComments.map((comment) => {
+                  const user = users.find((u) => u.id === comment.userId);
+                  return (
+                    <div key={comment.id} className="flex gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.avatar} />
+                        <AvatarFallback>{user?.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{user?.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(comment.createdAt), 'MMM d, h:mm a')}
+                          </span>
+                        </div>
+                        <p className="text-sm mt-1">{renderCommentWithMentions(comment.content)}</p>
                       </div>
-                      <p className="text-sm mt-1">{renderCommentWithMentions(comment.content)}</p>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })}
+                {localComments.map((comment) => {
+                  const user = users.find((u) => u.id === comment.userId);
+                  return (
+                    <div key={comment.id} className="flex gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.avatar} />
+                        <AvatarFallback>{user?.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{user?.name}</span>
+                          <Badge variant="outline" className="text-[10px] px-1 py-0">New</Badge>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(comment.createdAt), 'MMM d, h:mm a')}
+                          </span>
+                        </div>
+                        <p className="text-sm mt-1">{renderCommentWithMentions(comment.content)}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
             )}
             <div className="pt-2 relative">
               <Textarea 
@@ -503,7 +551,11 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
                 <p className="text-xs text-muted-foreground">
                   Tip: Type @ to mention teammates
                 </p>
-                <Button size="sm">
+                <Button 
+                  size="sm" 
+                  onClick={handlePostComment}
+                  disabled={!commentText.trim()}
+                >
                   Post Comment
                 </Button>
               </div>
