@@ -13,6 +13,7 @@ import Timesheets from "./pages/Timesheets";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import Calendar from "./pages/Calendar";
+import Docs from "./pages/Docs";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="projects/:projectId" element={<ProjectBoard />} />
               <Route path="calendar" element={<Calendar />} />
               <Route path="reports" element={<Reports />} />
+              <Route path="docs" element={<Docs />} />
               <Route path="timesheets" element={<Timesheets />} />
               <Route path="settings" element={<Settings />} />
               <Route path="profile" element={<Profile />} />
