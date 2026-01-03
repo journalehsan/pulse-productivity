@@ -43,7 +43,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onCreateTask, onTaskSelect, onPr
               <Bell className="h-4 w-4" />
               <Badge
                 variant="destructive"
-                className="absolute -right-1 -top-1 h-4 w-4 p-0 text-[10px]"
+                className="absolute -right-1 -top-1 h-4 min-w-4 px-0 py-0 text-[10px] leading-none tabular-nums justify-center"
               >
                 3
               </Badge>
