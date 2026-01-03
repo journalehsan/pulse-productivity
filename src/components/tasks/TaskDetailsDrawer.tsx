@@ -247,22 +247,24 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
   };
 
   return (
-    <div className="fixed right-0 top-14 bottom-0 w-full max-w-md border-l border-border bg-background shadow-lg z-50 flex flex-col">
+    <div className="fixed right-0 top-14 bottom-0 w-full max-w-md border-l border-border bg-card shadow-xl z-50 flex flex-col animate-in slide-in-from-right duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h2 className="font-semibold">Task Details</h2>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+      <div className="flex items-center justify-between border-b border-border px-4 py-3 bg-muted/30">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Task Details</span>
+        </div>
+        <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
           <X className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 space-y-5">
         {/* Title */}
         <div>
           <Input
             defaultValue={task.title}
-            className="text-lg font-medium border-0 px-0 focus-visible:ring-0"
+            className="text-lg font-semibold border-0 px-0 h-auto py-1 focus-visible:ring-0 bg-transparent"
           />
         </div>
 
