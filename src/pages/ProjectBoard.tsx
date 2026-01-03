@@ -4,8 +4,13 @@ import { Plus, List, LayoutGrid, Calendar, FileText, Upload } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
 import { TaskTree } from '@/components/tasks/TaskTree';
@@ -17,8 +22,11 @@ import { ImportTasksModal } from '@/components/modals/ImportTasksModal';
 import { NoTasksEmptyState } from '@/components/common/EmptyState';
 import { ProjectCalendar } from '@/components/calendar/ProjectCalendar';
 import { ProjectFilesTab } from '@/components/files/ProjectFilesTab';
+import { PresenceAvatar, getRandomStatus } from '@/components/common/PresenceAvatar';
+import { SummarizeProjectButton, AutoAssignButton } from '@/components/common/AIFeaturePlaceholders';
 import { projects, getNestedTasks, tasks as allTasks } from '@/data/mockData';
 import { Task } from '@/types';
+import { cn } from '@/lib/utils';
 
 const ProjectBoard: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -67,6 +75,10 @@ const ProjectBoard: React.FC = () => {
     inProgress: allProjectTasks.filter((t) => t.status === 'in_progress').length,
   };
 
+  const progressPercent = taskCounts.total > 0 
+    ? Math.round((taskCounts.done / taskCounts.total) * 100) 
+    : 0;
+
   const handleQuickAdd = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && newTaskTitle.trim()) {
       console.log('Quick add task:', newTaskTitle);
@@ -89,33 +101,52 @@ const ProjectBoard: React.FC = () => {
         }
         actions={
           <div className="flex items-center gap-2">
+            {/* Team Members with Presence */}
             <div className="flex -space-x-2 mr-2">
               {project.members.slice(0, 4).map((member) => (
-                <Avatar key={member.id} className="h-8 w-8 border-2 border-background">
-                  <AvatarImage src={member.avatar} />
-                  <AvatarFallback className="text-xs">{member.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+                <Tooltip key={member.id}>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <PresenceAvatar
+                        src={member.avatar}
+                        name={member.name}
+                        size="md"
+                        status={getRandomStatus(member.id)}
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p className="text-xs">{member.name}</p>
+                  </TooltipContent>
+                </Tooltip>
               ))}
               {project.members.length > 4 && (
-                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs border-2 border-background">
+                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium border-2 border-background">
                   +{project.members.length - 4}
                 </div>
               )}
             </div>
 
-            <Badge variant="outline" className="hidden sm:flex gap-1">
-              <span className="text-muted-foreground">{taskCounts.done}</span>
-              <span>/</span>
-              <span>{taskCounts.total}</span>
-              <span className="text-muted-foreground">done</span>
-            </Badge>
+            {/* Progress indicator */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50">
+              <div className="w-16">
+                <Progress value={progressPercent} className="h-1.5" />
+              </div>
+              <span className="text-xs font-medium">
+                {taskCounts.done}/{taskCounts.total}
+              </span>
+            </div>
 
-            <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+            {/* AI Buttons */}
+            <SummarizeProjectButton />
+            <AutoAssignButton />
+
+            <Button variant="outline" size="sm" onClick={() => setImportModalOpen(true)}>
               <Upload className="h-4 w-4 mr-1" />
               Import
             </Button>
 
-            <Button onClick={() => setCreateTaskOpen(true)}>
+            <Button size="sm" onClick={() => setCreateTaskOpen(true)}>
               <Plus className="h-4 w-4 mr-1" />
               Add Task
             </Button>
@@ -130,31 +161,47 @@ const ProjectBoard: React.FC = () => {
         className="flex-1 flex flex-col"
       >
         <div className="border-b border-border px-6">
-          <TabsList className="h-12 bg-transparent p-0 gap-4">
+          <TabsList className="h-11 bg-transparent p-0 gap-6">
             <TabsTrigger
               value="list"
-              className="h-12 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1"
+              className={cn(
+                'h-11 rounded-none border-b-2 border-transparent px-0 pb-3 pt-3 font-medium',
+                'data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary',
+                'text-muted-foreground hover:text-foreground transition-colors'
+              )}
             >
               <List className="h-4 w-4 mr-2" />
               List
             </TabsTrigger>
             <TabsTrigger
               value="board"
-              className="h-12 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1"
+              className={cn(
+                'h-11 rounded-none border-b-2 border-transparent px-0 pb-3 pt-3 font-medium',
+                'data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary',
+                'text-muted-foreground hover:text-foreground transition-colors'
+              )}
             >
               <LayoutGrid className="h-4 w-4 mr-2" />
               Board
             </TabsTrigger>
             <TabsTrigger
               value="calendar"
-              className="h-12 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1"
+              className={cn(
+                'h-11 rounded-none border-b-2 border-transparent px-0 pb-3 pt-3 font-medium',
+                'data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary',
+                'text-muted-foreground hover:text-foreground transition-colors'
+              )}
             >
               <Calendar className="h-4 w-4 mr-2" />
               Calendar
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="h-12 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1"
+              className={cn(
+                'h-11 rounded-none border-b-2 border-transparent px-0 pb-3 pt-3 font-medium',
+                'data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary',
+                'text-muted-foreground hover:text-foreground transition-colors'
+              )}
             >
               <FileText className="h-4 w-4 mr-2" />
               Files
@@ -166,13 +213,13 @@ const ProjectBoard: React.FC = () => {
         <FilterBar />
 
         {/* Quick Add Task */}
-        <div className="px-4 py-2 border-b border-border">
+        <div className="px-4 py-2 border-b border-border bg-muted/20">
           <Input
             placeholder="Press Enter to add a new task..."
             value={newTaskTitle}
             onChange={(e) => setNewTaskTitle(e.target.value)}
             onKeyDown={handleQuickAdd}
-            className="bg-muted/50 border-dashed"
+            className="bg-background border-dashed h-9 text-sm"
           />
         </div>
 
