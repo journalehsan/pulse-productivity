@@ -55,6 +55,17 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
   const [mentionSelectedIndex, setMentionSelectedIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Filter users for mention suggestions
+  const filteredMentionUsers = users.filter((user) =>
+    getUsernameForUser(user).includes(mentionFilter.toLowerCase())
+  );
+
+  // Reset selected index when filtered users change
+  useEffect(() => {
+    setMentionSelectedIndex(0);
+  }, [filteredMentionUsers.length, mentionFilter]);
+
+  // Early return after all hooks
   if (!task) return null;
 
   const taskComments = comments.filter((c) => c.taskId === task.id);
@@ -130,16 +141,6 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
 
     return parts.length > 0 ? parts : content;
   };
-
-  // Filter users for mention suggestions
-  const filteredMentionUsers = users.filter((user) =>
-    getUsernameForUser(user).includes(mentionFilter.toLowerCase())
-  );
-
-  // Reset selected index when filtered users change
-  useEffect(() => {
-    setMentionSelectedIndex(0);
-  }, [filteredMentionUsers.length, mentionFilter]);
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
