@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Calendar, Users, Tag, Clock, MessageSquare, Activity, Play, Pause, Paperclip, Plus, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Calendar, Users, Tag, Clock, MessageSquare, Activity, Play, Pause, Paperclip, Plus, Check, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,6 +50,10 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
     userId: string;
     createdAt: string;
   }>>([]);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
+  const [mentionSelectedIndex, setMentionSelectedIndex] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   if (!task) return null;
 
@@ -132,6 +136,11 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
     getUsernameForUser(user).includes(mentionFilter.toLowerCase())
   );
 
+  // Reset selected index when filtered users change
+  useEffect(() => {
+    setMentionSelectedIndex(0);
+  }, [filteredMentionUsers.length, mentionFilter]);
+
   const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     const cursorPos = e.target.selectionStart || 0;
@@ -151,6 +160,25 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (!showMentionSuggestions || filteredMentionUsers.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setMentionSelectedIndex((prev) => 
+        prev < filteredMentionUsers.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setMentionSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+    } else if (e.key === 'Enter' && showMentionSuggestions) {
+      e.preventDefault();
+      insertMention(filteredMentionUsers[mentionSelectedIndex]);
+    } else if (e.key === 'Escape') {
+      setShowMentionSuggestions(false);
+    }
+  };
+
   const insertMention = (user: User) => {
     const textBeforeCursor = commentText.slice(0, mentionCursorPosition);
     const textAfterCursor = commentText.slice(mentionCursorPosition);
@@ -163,6 +191,32 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
 
     setShowMentionSuggestions(false);
     setMentionFilter('');
+    setMentionSelectedIndex(0);
+    textareaRef.current?.focus();
+  };
+
+  // Edit/Delete local comments
+  const handleEditComment = (commentId: string, content: string) => {
+    setEditingCommentId(commentId);
+    setEditingCommentText(content);
+  };
+
+  const handleSaveEditComment = (commentId: string) => {
+    if (!editingCommentText.trim()) return;
+    setLocalComments(localComments.map((c) =>
+      c.id === commentId ? { ...c, content: editingCommentText } : c
+    ));
+    setEditingCommentId(null);
+    setEditingCommentText('');
+  };
+
+  const handleCancelEditComment = () => {
+    setEditingCommentId(null);
+    setEditingCommentText('');
+  };
+
+  const handleDeleteComment = (commentId: string) => {
+    setLocalComments(localComments.filter((c) => c.id !== commentId));
   };
 
   // Handle posting a new comment (UI only - temporary)
@@ -496,8 +550,9 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
                 })}
                 {localComments.map((comment) => {
                   const user = users.find((u) => u.id === comment.userId);
+                  const isEditing = editingCommentId === comment.id;
                   return (
-                    <div key={comment.id} className="flex gap-3">
+                    <div key={comment.id} className="flex gap-3 group">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={user?.avatar} />
                         <AvatarFallback>{user?.name.charAt(0)}</AvatarFallback>
@@ -509,8 +564,47 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
                           <span className="text-xs text-muted-foreground">
                             {format(new Date(comment.createdAt), 'MMM d, h:mm a')}
                           </span>
+                          {!isEditing && (
+                            <div className="ml-auto flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => handleEditComment(comment.id, comment.content)}
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-destructive hover:text-destructive"
+                                onClick={() => handleDeleteComment(comment.id)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
-                        <p className="text-sm mt-1">{renderCommentWithMentions(comment.content)}</p>
+                        {isEditing ? (
+                          <div className="mt-1 space-y-2">
+                            <Textarea
+                              value={editingCommentText}
+                              onChange={(e) => setEditingCommentText(e.target.value)}
+                              rows={2}
+                              autoFocus
+                            />
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={() => handleSaveEditComment(comment.id)}>
+                                Save
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={handleCancelEditComment}>
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm mt-1">{renderCommentWithMentions(comment.content)}</p>
+                        )}
                       </div>
                     </div>
                   );
@@ -519,21 +613,25 @@ export const TaskDetailsDrawer: React.FC<TaskDetailsDrawerProps> = ({
             )}
             <div className="pt-2 relative">
               <Textarea 
+                ref={textareaRef}
                 placeholder="Write a comment... Use @ to mention someone" 
                 rows={2}
                 value={commentText}
                 onChange={handleCommentChange}
+                onKeyDown={handleKeyDown}
               />
               {showMentionSuggestions && filteredMentionUsers.length > 0 && (
                 <div className="absolute bottom-full left-0 mb-1 w-64 bg-popover border border-border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
                   <p className="text-xs font-medium text-muted-foreground px-3 py-2 border-b border-border">
-                    Mention someone
+                    Mention someone (↑↓ to navigate, Enter to select)
                   </p>
-                  {filteredMentionUsers.map((user) => (
+                  {filteredMentionUsers.map((user, index) => (
                     <button
                       key={user.id}
                       onClick={() => insertMention(user)}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors"
+                      className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                        index === mentionSelectedIndex ? 'bg-muted' : 'hover:bg-muted'
+                      }`}
                     >
                       <Avatar className="h-6 w-6">
                         <AvatarImage src={user.avatar} />
