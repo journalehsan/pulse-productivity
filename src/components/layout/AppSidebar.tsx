@@ -76,7 +76,7 @@ const NavItem: React.FC<{
       <>
         <span className="flex-1">{item.label}</span>
         {item.badge && item.badge > 0 && (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-medium text-primary-foreground">
+          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground text-center leading-none">
             {item.badge}
           </span>
         )}
